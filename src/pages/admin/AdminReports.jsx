@@ -289,6 +289,48 @@ const AdminReports = () => {
 
             setProductStats(enrichedProducts);
 
+            // 2. Process Order Stats for Chart (Timeline)
+            const timelineMap = {};
+            const rawOrders = summaryData.orders || [];
+            rawOrders.forEach(o => {
+                let d = '';
+                if (o.bill_date) d = o.bill_date.split('T')[0];
+                else if (o.date) d = o.date.split('T')[0];
+                else if (o.created_at) d = o.created_at.split('T')[0];
+
+                if (d) {
+                    const amt = parseFloat(o.grand_total || o.total_amount || o.amount || 0);
+                    timelineMap[d] = (timelineMap[d] || 0) + amt;
+                }
+            });
+
+            // Fill date gaps to ensure chart renders correctly even with single data point
+            const timelineData = [];
+            const start = new Date(filters.start_date);
+            const end = new Date(filters.end_date);
+
+            if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+                let current = new Date(start);
+                let guard = 0;
+                while (current <= end && guard < 366) {
+                    const dStr = current.toISOString().split('T')[0];
+                    timelineData.push({
+                        date: dStr,
+                        revenue: timelineMap[dStr] || 0
+                    });
+                    current.setDate(current.getDate() + 1);
+                    guard++;
+                }
+            }
+
+            // Fallback if loop didn't run (e.g. invalid dates) but we have data
+            if (timelineData.length === 0) {
+                const sortedDates = Object.keys(timelineMap).sort();
+                sortedDates.forEach(d => timelineData.push({ date: d, revenue: timelineMap[d] }));
+            }
+
+            setOrderStats(timelineData);
+
             // Populate Employee Performance and Orders from Summary
             setEmployeePerformance(summaryData.employees || []);
             setOrdersList(summaryData.orders || []);
@@ -735,7 +777,7 @@ const AdminReports = () => {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                                 <div className="lg:col-span-2">
                                     <Card title="Revenue Distribution">
-                                        <div className="h-[300px] md:h-[400px]">
+                                        <div className="h-[300px] md:h-[400px] w-full">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <AreaChart
                                                     data={orderStats}

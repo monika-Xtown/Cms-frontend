@@ -789,7 +789,7 @@ const Logs = () => {
                     </td>
                     <td className="px-4 py-2 landscape:py-1 text-base landscape:text-xs font-medium text-center whitespace-nowrap">
                       <div>{formatDate(log.bill_date)}</div>
-                      <div className="text-[10px] landscape:text-[8px] opacity-60 font-mono tracking-wider">#{log.bill_id || log.order_id || log.id}</div>
+                      <div className="text-sm landscape:text-xs font-bold opacity-90 font-mono tracking-wider">#{log.bill_id || log.order_id || log.id}</div>
                     </td>
                     <td className="px-4 py-2 landscape:py-1 text-base landscape:text-xs">{log.unit?.name || 'N/A'}</td>
                     <td className="px-4 py-2 landscape:py-1 text-base landscape:text-xs font-bold text-[var(--text-primary)]">
